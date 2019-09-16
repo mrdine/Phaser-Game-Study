@@ -9,7 +9,7 @@ function preload() {
     this.load.image('reta_vertical', './assets/world/pista/reta_vertical.png')
     this.load.image('gramado', './assets/world/terreno/gramado.png')
 
-    this.load.spritesheet('carro', './assets/player/carro.png', { frameWidth: 32, frameHeight: 48 })
+    this.load.spritesheet('carro', './assets/player/carro.png', { frameWidth: 50, frameHeight: 85 })
 
     
 }
@@ -103,7 +103,7 @@ function create() {
 
     this.anims.create({
         key: 'andar',
-        frames: this.anims.generateFrameNumbers('carro', { start: 0, end: 2 }),
+        frames: this.anims.generateFrameNumbers('carro', { start: 0, end: 3 }),
         frameRate: 10,
         repeat: -1
     });
@@ -112,20 +112,28 @@ function create() {
 
 function update() {
 
+    // iniciar animação
+    gameState.carro.anims.play('andar', true);
+
     var vel = 3
     if (gameState.cursors.down.isDown) {
         gameState.carro.y += vel
+        gameState.carro.rotation = 3.14
     }
     if (gameState.cursors.up.isDown) {
         gameState.carro.y -= vel
+        gameState.carro.rotation = 0
     }
     if (gameState.cursors.right.isDown) {
         gameState.carro.x += vel
-        gameState.carro.rotation = 90
+        gameState.carro.rotation = 1.55
     }
     if (gameState.cursors.left.isDown) {
         gameState.carro.x -= vel
+        gameState.carro.rotation = -1.55
     }
+
+    
 }
 
 const config = {
