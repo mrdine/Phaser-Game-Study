@@ -9,9 +9,9 @@ function preload() {
     this.load.image('reta_vertical', './assets/world/pista/reta_vertical.png')
     this.load.image('gramado', './assets/world/terreno/gramado.png')
 
-    this.load.image('carro', './assets/player/carro.png')
+    this.load.spritesheet('carro', './assets/player/carro.png', { frameWidth: 32, frameHeight: 48 })
 
-    this.load.image('codey', 'https://s3.amazonaws.com/codecademy-content/courses/learn-phaser/codey.png')
+    
 }
 
 function create() {
@@ -99,6 +99,14 @@ function create() {
     // adicionar carro
     gameState.carro = dinamLayer.create(40,40, 'carro')
 
+    // animaçao do carro
+
+    this.anims.create({
+        key: 'andar',
+        frames: this.anims.generateFrameNumbers('carro', { start: 0, end: 2 }),
+        frameRate: 10,
+        repeat: -1
+    });
 
 }
 
@@ -113,6 +121,7 @@ function update() {
     }
     if (gameState.cursors.right.isDown) {
         gameState.carro.x += vel
+        gameState.carro.rotation = 90
     }
     if (gameState.cursors.left.isDown) {
         gameState.carro.x -= vel
@@ -131,3 +140,4 @@ const config = {
 }
 
 const game = new Phaser.Game(config)
+
