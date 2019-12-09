@@ -1,4 +1,31 @@
+// gambiarra, tem que rever depois
+var phaserRef = null;
+var spriteSize;
+// chao layer
+var chaoLayer;
+// bolinhas layer
+var bolaLayer;
+// parede layer
+var paredeLayer;
+
+var grupoColetor;
+
 // funções dos comportamentos
+function addColetor(coletor)
+{
+    grupoColetor.add(coletor.gameObject);
+}
+function addColetado(coletado) {
+    var coleta = function() {
+            // destrói objeto
+            coletado.disableBody(true, true);
+            // aumenta score
+            score += 10;
+            scoreText.setText('Score: ' + score);
+        };
+    phaserRef.physics.add.overlap(coletado, grupoColetor, coleta, null, this);
+}
+
 var andar = function (player) {
 
     // player move
@@ -47,14 +74,36 @@ var andar = function (player) {
         */
     }
 }
-// coletar bolinha
-function coletaBol (player, bolinha)
-{
-    bolinha.disableBody(true, true);
-
-    score += 10;
-    scoreText.setText('Score: ' + score);
+var addAndar = function (player) {
+    player.addBehaviour(andar)
 }
+
+function CatalogObject(catalogID, x, y)  {
+    //this.catalogID = catalogID;
+    this.behaviours = [];
+//ver aqui    
+    this.gameObject = phaserRef.physics.add.sprite(x, y, catalogID).setOrigin(0, 0);
+    this.gameObject.setBounce(0.2)
+    this.gameObject.setCollideWorldBounds(true)
+// pensar para plataforma como seria
+    this.gameObject.direction = 'up'
+    // colisão entre objeto e paredes
+    phaserRef.physics.add.collider(this.gameObject, paredeLayer);
+
+    this.addBehaviour = function(behaviour) { this.behaviours.push(behaviour); }
+    var myBehaviours = this.behaviours;
+    this.update = function() {
+        for (var i = myBehaviours.length - 1; i >= 0; i--) {
+           this.behaviours[i](this.gameObject);
+        }
+    }
+}
+
+
+gameObjects = [];
+
+
+
 
 
 const gameState = {}
@@ -77,6 +126,8 @@ function preload() {
 }
 
 function create() {
+
+    phaserRef = this;
 
     //keyboard input
     gameState.cursors = this.input.keyboard.createCursorKeys()
@@ -106,20 +157,24 @@ function create() {
      */
 
     // chao layer
-    var chaoLayer = this.add.group()
+    chaoLayer = this.add.group()
+    // grupo
+    grupoColetor = this.add.group()
     // bolinhas layer
-    var bolaLayer = this.physics.add.staticGroup()
+    bolaLayer = this.physics.add.staticGroup()
     // parede layer
-    var paredeLayer = this.physics.add.staticGroup()
+    paredeLayer = this.physics.add.staticGroup()
 
     // para transformar o tamanho das sprites em 10% da tela do jogo
-    var spriteSize = game.config.width * .1
+    spriteSize = game.config.width * .1
 
     // preencher mundo
     for (var lin = 0; lin < 10; lin++) {
         for (var col = 0; col < 10; col++) {
             // chao
-            var chao = chaoLayer.create(lin * spriteSize, col * spriteSize, 'chao').setOrigin(0, 0)
+            var chao = chaoLayer.create(lin * spriteSize, col * spriteSize, 'chao').setOrigin(0, 0);
+//            .add(chao);
+
             // resize sprite
             chao.displayWidth = spriteSize
             chao.scaleY = 1.25
@@ -135,10 +190,11 @@ function create() {
                     parede.refreshBody()
                     break
                 case 1:
-                    var bol = bolaLayer.create(lin * spriteSize + (spriteSize / 2), col * spriteSize + (spriteSize / 2.5), 'bolPequena').setOrigin(0, 0)
-                    bol.displayWidth = spriteSize * .2
-                    bol.scaleY = 2
-                    bol.refreshBody()
+                    var bol = new CatalogObject('bolPequena', lin * spriteSize + (spriteSize / 2), col * spriteSize + (spriteSize / 2.5))
+                    addColetado(bol);
+                    bol.gameObject.displayWidth = spriteSize * .2
+                    bol.gameObject.scaleY = 2
+                    //bol.gameObject.refreshBody()
                     break
                 case 2:
                     // vola grande
@@ -150,17 +206,17 @@ function create() {
         }
     }
 
-    gameState.player = this.physics.add.sprite(1 * spriteSize + 10, 4 * spriteSize, 'player').setOrigin(0, 0);
-    gameState.player.setBounce(0.2)
-    gameState.player.setCollideWorldBounds(true)
+//    gameState.player = this.physics.add.sprite(1 * spriteSize + 10, 4 * spriteSize, 'player').setOrigin(0, 0);
+//    gameState.player.setBounce(0.2)
+//    gameState.player.setCollideWorldBounds(true)
 
     // colisão entre player e paredes
-    this.physics.add.collider(gameState.player, paredeLayer);
+//    this.physics.add.collider(gameState.player, paredeLayer);
     // colisão entre player e bolinhas
-    this.physics.add.overlap(gameState.player, bolaLayer, coletaBol, null, this);
+//    this.physics.add.overlap(gameState.player, bolaLayer, coletaBol, null, this);
 
     // direction of Player (left, rigth, up, down)
-    gameState.playerDirection = 'up'
+//    gameState.playerDirection = 'up'
 
 
     // animações do player
@@ -190,6 +246,12 @@ function create() {
     });
 
 
+    var obj = new CatalogObject('player', 1 * spriteSize + 10, 4 * spriteSize);
+    addAndar(obj);
+    addColetor(obj);
+//    obj.addBehaviour(coletorObj)
+
+    gameObjects.push(obj);
 
 
     // exibição dos pontos
@@ -198,7 +260,10 @@ function create() {
 
 
 function update() {
-    andar(gameState.player)
+//    andar(gameState.player)
+   for (var i = gameObjects.length - 1; i >= 0; i--) {
+       gameObjects[i].update();
+   }
 }
 
 const config = {
